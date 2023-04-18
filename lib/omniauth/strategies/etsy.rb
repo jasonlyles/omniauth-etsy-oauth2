@@ -19,14 +19,15 @@ module OmniAuth
         etsy_auth_params = etsy_auth_params&.with_indifferent_access
 
         strategy.options[:authorize_params] = etsy_auth_params
+        strategy.options[:token_params] = { client_id: strategy.options['client_id'] }
       }
 
-      uid { URI.parse(options[:client_options][:site]).host }
+      uid { user_credentials['user_id'] }
       credentials { user_credentials }
 
       def setup_phase
         options.scope = preprocessed_scopes
-        options.client_options.merge!(urls)
+        options.client_options.merge!(client_options)
         super
       end
 
@@ -47,11 +48,12 @@ module OmniAuth
         Array(options.scope).join(' ')
       end
 
-      def urls
+      def client_options
         {
           site: 'https://api.etsy.com',
           token_url: 'https://api.etsy.com/v3/public/oauth/token',
           authorize_url: 'https://www.etsy.com/oauth/connect',
+          auth_scheme: :request_body
         }
       end
     end
